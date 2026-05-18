@@ -209,7 +209,7 @@ export default function App() {
                   marginTop: '8px'
                 }}
               >
-                AI-powered object detection & tracking
+                AI-powered Human tracking for suspicious activities
               </p>
 
             </div>
