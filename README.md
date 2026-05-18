@@ -1,117 +1,298 @@
-# Video Surveillance Pipeline
+# AI Behavioral Surveillance System
 
-## 🏗️ Architecture Overview
+## Overview
 
-This system is designed with a modular, decoupled architecture separating detection, spatial logic, and data logging. 
+AI Behavioral Surveillance System is a real-time intelligent surveillance platform built using YOLOv8, ByteTrack, FastAPI, and React.
 
-Pipeline Flow:
-1. Input Ingestion: Video frames are read sequentially via OpenCV.
-2. Detection & Tracking Engine: Frames are passed to the inference model to extract bounding boxes and track IDs.
-3. Spatial & Temporal Logic: Bounding box centroids (feet) are mapped against predefined polygon coordinates. Temporal states are updated per unique ID to track duration inside zones.
-4. Output Generation: Events are serialized to a structured JSON file, and annotated frames are compiled into an `.mp4` output.
+The system performs:
 
-```Text
-[Video Source] ➔ [YOLOv8 + ByteTrack] ➔ [Point-in-Polygon Engine] ➔ [State Manager] ➔ [JSON Log & Annotated .mp4]
+* Real-time human detection
+* Persistent multi-person tracking
+* Behavioral threat scoring
+* Loitering detection
+* Live surveillance streaming
+* Incident generation
+* Dynamic threat visualization dashboard
+
+Unlike traditional object detection systems, this project focuses on behavioral analytics and suspicious activity monitoring.
+
+---
+
+# Features
+
+## Real-Time Human Detection
+
+* Detects only humans using YOLOv8
+* Filters out unnecessary object detections
+* Optimized for surveillance environments
+
+---
+
+## Persistent Person Tracking
+
+* Uses ByteTrack for ID-based tracking
+* Assigns unique IDs to detected individuals
+* Tracks movement continuously across frames
+
+---
+
+## Behavioral Threat Analysis
+
+Each tracked person receives a dynamic threat score based on:
+
+* Duration in monitored zone
+* Loitering behavior
+* Continuous presence
+* Behavioral escalation logic
+
+Threat levels:
+
+* LOW
+* MEDIUM
+* HIGH
+
+---
+
+## Loitering Detection
+
+The system identifies suspicious lingering behavior.
+
+Example:
+
+* Standing in the same area for extended duration
+* Repeated presence inside monitored zones
+
+Generated activities:
+
+* NORMAL
+* LOITERING
+* SUSPICIOUS
+
+---
+
+## Live Threat Dashboard
+
+Interactive React-based dashboard displaying:
+
+* Live surveillance feed
+* Threat overlays
+* Incident logs
+* Real-time risk analytics
+* Behavioral alerts
+
+---
+
+# Tech Stack
+
+## Frontend
+
+* React
+* Vite
+* JavaScript
+
+## Backend
+
+* FastAPI
+* OpenCV
+* NumPy
+
+## AI / Vision
+
+* YOLOv8
+* ByteTrack
+* Ultralytics
+
+---
+
+# Project Architecture
+
+Screen Share Stream
+↓
+Frontend Frame Capture
+↓
+FastAPI Backend
+↓
+YOLOv8 Person Detection
+↓
+ByteTrack Multi-Object Tracking
+↓
+Behavioral Threat Analysis
+↓
+Incident Generation
+↓
+Live Dashboard Visualization
+
+---
+
+# Folder Structure
+
+```bash
+Video-Surveillance/
+│
+├── backend/
+│   ├── detector/
+│   │   ├── inference.py
+│   │   └── threat_analysis.py
+│   │
+│   ├── app.py
+│   ├── shared_frame.py
+│   └── threat_state.py
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── StatsCard.jsx
+│   │   │   └── EventLog.jsx
+│   │   │
+│   │   └── App.jsx
+│
+└── README.md
 ```
 
+---
 
-## 🧠 Model Choices
+# Installation
 
-Detection: YOLOv8
-Selected: YOLOv8 Nano (yolov8n.pt) for standard CCTV and YOLOv8 Medium (yolov8m.pt) for aerial/drone footage. Filtered strictly to classes=[0] (person).
+## Clone Repository
 
-Why: YOLOv8 provides a state-of-the-art balance between inference speed and accuracy, allowing this pipeline to run locally on a CPU without requiring cloud GPU resources.
-
-Alternatives Considered: Faster R-CNN was considered for its high accuracy, but it is far too computationally heavy for near real-time CPU processing.
-
-Tracking: ByteTrack
-Selected: YOLO's native ByteTrack integration (persist=True).
-
-Why: ByteTrack excels at maintaining tracking IDs during occlusion (e.g., a person walking behind a store shelf) by utilizing low-confidence detection boxes, whereas other trackers might drop the ID entirely.
-
-Alternatives Considered: SORT and DeepSORT. SORT struggles with heavy occlusion, and DeepSORT requires a separate feature-extraction model which adds overhead.
-
-
-## ⚙️ Setup Instructions
-
-1. Clone the repository and navigate to the directory:
-
-```Bash
-git clone <your-repo-link>
-cd video-surveillance-assignment
+```bash
+git clone <your-repository-url>
+cd Video-Surveillance
 ```
 
-2. Create and activate a virtual environment:
+---
 
+# Backend Setup
 
-Windows:
-```Bash
-PowerShell
+## Create Virtual Environment
+
+```bash
 python -m venv venv
-.\venv\Scripts\activate
 ```
 
-Mac/Linux:
+## Activate Virtual Environment
 
-```Bash
-python3 -m venv venv
-source venv/bin/activate
-```
-3. Install dependencies:
+### Windows
 
-```Bash
-pip install -r requirements.txt
+```bash
+venv\\Scripts\\activate
 ```
 
-4. Run the Pipeline:
-Use the Command Line Interface (CLI) to pass the video, the specific configuration file, and the desired output paths.
+---
 
-```Bash
-python main.py --input data/input/UCF_clip.mp4 --config config_ucf_aisle.json --output_vid data/output/annotated_ucf.mp4 --output_log data/output/events_ucf.json
+## Install Dependencies
+
+```bash
+pip install fastapi uvicorn ultralytics opencv-python numpy python-multipart
 ```
 
+---
 
-## 🎛️ Configuration
+## Run Backend
 
-The pipeline is camera-agnostic. To adapt the system to a new camera angle, you do not need to alter the Python code; you simply create a new JSON configuration file.
-
-Example config.json:
-
-```JSON
-{
-  "zones": [
-    {
-      "name": "Restricted_Area",
-      "coordinates": [[150, 100], [500, 100], [500, 250], [150, 250]],
-      "loitering_threshold_seconds": 3.0
-    }
-  ],
-  "target_fps": 30,
-  "confidence_threshold": 0.5
-}
+```bash
+uvicorn app:app --reload
 ```
 
-Defining Zones: Map the [X, Y] pixel coordinates of the polygon relative to the camera's resolution.
+Backend runs on:
 
-Adjusting Thresholds: Modify loitering_threshold_seconds to dictate how long a tracked ID must remain in a zone before triggering a loitering event. Lower the confidence_threshold for distant cameras (like drones).
+```bash
+http://127.0.0.1:8000
+```
 
+---
 
-## 📸 Sample Results
+# Frontend Setup
 
-![Sample Output 1](image.png)
-![Sample Output 2](Screenshot%202026-04-10%20021946.png)
+## Install Dependencies
 
+```bash
+npm install
+```
 
+---
 
+## Run Frontend
 
+```bash
+npm run dev
+```
 
+Frontend runs on:
 
+```bash
+http://localhost:5173
+```
 
-## ⚠️ Known Limitations & Future Improvements
+---
 
-Camera Movement (PTZ/Drones): The current spatial logic relies on static pixel coordinates. If the camera pans or a drone moves significantly, the polygon zone will detach from the physical ground. Improvement: Implement image stabilization or homography transformations to anchor zones to real-world GPS/physical coordinates.
+# Usage
 
-Microscopic Object Detection: Small subjects in high-altitude drone footage require increasing the inference resolution (imgsz=1280) and lowering the confidence threshold, which vastly increases computational load. Improvement: Implement SAHI (Slicing Aided Hyper Inference) to process high-res imagery in smaller blocks.
+1. Start backend server
+2. Start frontend server
+3. Open dashboard in browser
+4. Click "Share Screen"
+5. Select screen/window to monitor
+6. Observe:
 
-Heavy Occlusion: In highly crowded scenes, ID switching can still occasionally occur if multiple people cross paths simultaneously.
+   * Live tracking
+   * Threat scoring
+   * Behavioral alerts
+   * Incident generation
 
+---
+
+# Threat Scoring Logic
+
+Threat score increases based on:
+
+* Loitering duration
+* Persistent presence
+* Behavioral escalation
+
+Example:
+
+* NORMAL → LOW RISK
+* LOITERING → MEDIUM RISK
+* SUSPICIOUS → HIGH RISK
+
+---
+
+# Future Enhancements
+
+* Pose estimation
+* Violence detection
+* Weapon detection
+* Restricted zone intrusion
+* Running detection
+* Crowd anomaly analysis
+* Theft behavior analysis
+* Multi-camera support
+* Database integration
+* Alert notifications
+
+---
+
+# Research Applications
+
+* Smart surveillance
+* Security analytics
+* Behavioral AI systems
+* Crowd monitoring
+* Threat detection systems
+* Public safety systems
+
+---
+
+# Disclaimer
+
+This project is a prototype research and educational surveillance system intended for academic and learning purposes.
+
+Threat scores are heuristic-based and designed for demonstration purposes.
+
+---
+
+# Authors
+
+Developed as an AI-powered behavioral surveillance research project using computer vision and real-time analytics.
